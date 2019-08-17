@@ -137,7 +137,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
     final NoteResource noteResource = objectMapper.readValue(
         web.perform(post(Routes.NOTES)
             .contentType(APPLICATION_JSON_UTF8)
-            .content(objectMapper.writeValueAsBytes(
+            .content(objectMapper.writeValueAsString(
                 NoteResource.builder()
                             .subject("Another Test Note")
                             .body("Another Test Note Body")
@@ -153,7 +153,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
            .andExpect(jsonPath("_links.self.href").exists())
            .andReturn()
            .getResponse()
-           .getContentAsByteArray(), NoteResource.class);
+           .getContentAsString(), NoteResource.class);
 
     final NoteEntity entity = noteRepository.findOptionalByReference(noteResource.getReference())
                                             .orElseThrow();
@@ -171,7 +171,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void create_NOK_mandatoryParameterMissing() throws Exception {
     web.perform(post(Routes.NOTES)
         .contentType(APPLICATION_JSON_UTF8)
-        .content(objectMapper.writeValueAsBytes(
+        .content(objectMapper.writeValueAsString(
             NoteResource.builder()
                         .body("Another Test Note Body")
                         .build())))
@@ -186,7 +186,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void update_OK() throws Exception {
     web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
         .contentType(APPLICATION_JSON_UTF8)
-        .content(objectMapper.writeValueAsBytes(
+        .content(objectMapper.writeValueAsString(
             NoteResource.builder()
                         .reference(UUID.randomUUID()) // should not be changed
                         .subject("Changed Note")
@@ -209,7 +209,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void update_NOK_wrongVersion() throws Exception {
     web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
         .contentType(APPLICATION_JSON_UTF8)
-        .content(objectMapper.writeValueAsBytes(
+        .content(objectMapper.writeValueAsString(
             NoteResource.builder()
                         .subject("Changed Note")
                         .body("Body of the changed Note")
@@ -225,7 +225,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void update_NOK_noDataFound() throws Exception {
     web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
         .contentType(APPLICATION_JSON_UTF8)
-        .content(objectMapper.writeValueAsBytes(
+        .content(objectMapper.writeValueAsString(
             NoteResource.builder()
                         .subject("Changed Note")
                         .body("Body of the changed Note")
@@ -239,7 +239,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void update_NOK_mandatoryParameterMissing() throws Exception {
     web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
         .contentType(APPLICATION_JSON_UTF8)
-        .content(objectMapper.writeValueAsBytes(
+        .content(objectMapper.writeValueAsString(
             NoteResource.builder()
                         .body("Body of the changed Note")
                         .lastUpdatedAt(LAST_UPDATED_AT)
@@ -253,7 +253,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void update_NOK_lastUpdatedAtMissing() throws Exception {
     web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
         .contentType(APPLICATION_JSON_UTF8)
-        .content(objectMapper.writeValueAsBytes(
+        .content(objectMapper.writeValueAsString(
             NoteResource.builder()
                         .subject("Changed Note")
                         .body("Body of the changed Note")
