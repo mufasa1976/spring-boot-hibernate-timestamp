@@ -1,0 +1,11 @@
+INSERT INTO notes (reference, subject, body, last_updated_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Test Note 01', 'Body of Test Note 01', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000002', 'Test Note 02', 'Body of Test Note 02', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000003', 'Test Note 03', 'Body of Test Note 03', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000004', 'Test Note 04', 'Body of Test Note 04', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000005', 'Test Note 05', 'Body of Test Note 05', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000006', 'Test Note 06', 'Body of Test Note 06', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000007', 'Test Note 07', 'Body of Test Note 07', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000008', 'Test Note 08', 'Body of Test Note 08', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000009', 'Test Note 09', 'Body of Test Note 09', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'))
+      ,('00000000-0000-0000-0000-000000000010', 'Test Note 10', 'Body of Test Note 10', PARSEDATETIME('2019-08-17 00:34:00.001', 'yyyy-MM-dd HH:mm:ss.SSS'));
