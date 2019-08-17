@@ -5,10 +5,10 @@ import io.github.mufasa1976.spring.test.softwareday.entities.NoteEntity;
 import io.github.mufasa1976.spring.test.softwareday.repositories.NoteRepository;
 import io.github.mufasa1976.spring.test.softwareday.resources.NoteResource;
 import io.github.mufasa1976.spring.test.softwareday.services.NoteService;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -27,18 +27,20 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON_UTF8;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest({"debug=true", "logging.level.io.github.mufasa1976.spring.test.softwareday=debug"})
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs(uriPort = SpringBootTestSoftwaredayApplicationTests.PORT)
 @Transactional
-@Slf4j
 public class SpringBootTestSoftwaredayApplicationTests {
   private static final LocalDateTime LAST_UPDATED_AT = LocalDateTime.of(2019, 8, 17, 0, 34, 0, 1000000);
   private static final String FORMATTED_LAST_UPDATED_AT = LAST_UPDATED_AT.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
+  static final int PORT = 8080;
   private static final String TEXT_PLAIN_UTF8 = "text/plain;charset=UTF-8";
 
   @Autowired
@@ -60,6 +62,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
         .param("size", "3")
         .param("page", "1")
         .param("sort", "subject,ASC"))
+       .andDo(document("findAllNotes_OK"))
        .andExpect(status().isOk())
        .andExpect(content().contentType(HAL_JSON_UTF8))
        .andExpect(jsonPath("_embedded.notes").isArray())
@@ -90,12 +93,13 @@ public class SpringBootTestSoftwaredayApplicationTests {
   }
 
   private String getSelfLink(String reference) {
-    return String.format("http://localhost%s/%s", Routes.NOTES, reference);
+    return String.format("http://localhost:%d%s/%s", PORT, Routes.NOTES, reference);
   }
 
   @Test
   public void findAllNotes_OK_noDataFound() throws Exception {
     web.perform(get(Routes.NOTES))
+       .andDo(document("findAllNotes_OK_noDataFound"))
        .andExpect(status().isOk())
        .andExpect(content().contentType(HAL_JSON_UTF8))
        .andExpect(jsonPath("_embedded.notes").doesNotExist())
@@ -110,6 +114,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   @Sql("classpath:/scripts/db/notes.sql")
   public void findNoteByReference_OK() throws Exception {
     web.perform(get(Routes.NOTE, "00000000-0000-0000-0000-000000000004"))
+       .andDo(document("findNoteByReference_OK"))
        .andExpect(status().isOk())
        .andExpect(content().contentType(HAL_JSON_UTF8))
        .andExpect(jsonPath("*", hasSize(5)))
@@ -123,6 +128,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   @Test
   public void findNoteByReference_NOK_noDataFound() throws Exception {
     web.perform(get(Routes.NOTE, "00000000-0000-0000-0000-000000000004"))
+       .andDo(document("findNoteByReference_NOK_noDataFound"))
        .andExpect(status().isNotFound());
   }
 
@@ -136,6 +142,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
                             .subject("Another Test Note")
                             .body("Another Test Note Body")
                             .build())))
+           .andDo(document("create_OK"))
            .andExpect(status().isOk())
            .andExpect(content().contentType(HAL_JSON_UTF8))
            .andExpect(jsonPath("*", hasSize(5)))
@@ -168,6 +175,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
             NoteResource.builder()
                         .body("Another Test Note Body")
                         .build())))
+       .andDo(document("create_NOK_mandatoryParameterMissing"))
        .andExpect(status().isBadRequest());
 
     verify(noteService, never()).create(any());
@@ -185,6 +193,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
                         .body("Body of the changed Note")
                         .lastUpdatedAt(LAST_UPDATED_AT)
                         .build())))
+       .andDo(document("update_OK"))
        .andExpect(status().isOk())
        .andExpect(content().contentType(HAL_JSON_UTF8))
        .andExpect(jsonPath("*", hasSize(5)))
@@ -206,6 +215,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
                         .body("Body of the changed Note")
                         .lastUpdatedAt(LocalDateTime.now())
                         .build())))
+       .andDo(document("update_NOK_wrongVersion"))
        .andExpect(status().isConflict())
        .andExpect(content().contentType(TEXT_PLAIN_UTF8))
        .andExpect(content().string("Row has already been updated in another Session"));
@@ -221,6 +231,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
                         .body("Body of the changed Note")
                         .lastUpdatedAt(LAST_UPDATED_AT)
                         .build())))
+       .andDo(document("update_NOK_noDataFound"))
        .andExpect(status().isNotFound());
   }
 
@@ -233,6 +244,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
                         .body("Body of the changed Note")
                         .lastUpdatedAt(LAST_UPDATED_AT)
                         .build())))
+       .andDo(document("update_NOK_mandatoryParameterMissing"))
        .andExpect(status().isBadRequest());
     verify(noteService, never()).update(any(), any());
   }
@@ -246,6 +258,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
                         .subject("Changed Note")
                         .body("Body of the changed Note")
                         .build())))
+       .andDo(document("update_NOK_lastUpdatedAtMissing"))
        .andExpect(status().isBadRequest())
        .andExpect(content().contentType(APPLICATION_JSON_UTF8))
        .andExpect(jsonPath("message").value(String.format("Property '%s' has not been set", NoteService.LAST_MODIFICATION_DATE)))
@@ -260,6 +273,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
 
     web.perform(delete(Routes.NOTE, "00000000-0000-0000-0000-000000000009")
         .param(Routes.Param.LAST_UPDATED_AT, FORMATTED_LAST_UPDATED_AT))
+       .andDo(document("delete_OK"))
        .andExpect(status().isNoContent());
 
     assertThat(noteRepository.findOptionalByReference(UUID.fromString("00000000-0000-0000-0000-000000000009"))).isEmpty();
@@ -269,6 +283,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   public void delete_NOK_noDataFound() throws Exception {
     web.perform(delete(Routes.NOTE, "00000000-0000-0000-0000-000000000009")
         .param(Routes.Param.LAST_UPDATED_AT, FORMATTED_LAST_UPDATED_AT))
+       .andDo(document("delete_NOK_noDataFound"))
        .andExpect(status().isNotFound())
        .andExpect(content().contentType(APPLICATION_JSON_UTF8))
        .andExpect(jsonPath("resourceClass").value(is(NoteResource.class.getName())))
@@ -279,6 +294,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
   @Test
   public void delete_NOK_lastUpdatedAtMissing() throws Exception {
     web.perform(delete(Routes.NOTE, "00000000-0000-0000-0000-000000000009"))
+       .andDo(document("delete_NOK_lastUpdatedAtMissing"))
        .andExpect(status().isBadRequest());
     verify(noteService, never()).delete(any(), any());
   }

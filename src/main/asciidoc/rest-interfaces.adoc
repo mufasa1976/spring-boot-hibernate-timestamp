@@ -1,0 +1,197 @@
+= REST Interfaces
+
+== Get all Notes
+
+=== Request
+include::{snippets}/findAllNotes_OK/http-request.adoc[]
+
+==== httpie
+include::{snippets}/findAllNotes_OK/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/findAllNotes_OK/curl-request.adoc[]
+
+=== Response
+include::{snippets}/findAllNotes_OK/http-response.adoc[]
+
+== Get all Notes but without any Data found
+
+=== Request
+include::{snippets}/findAllNotes_OK_noDataFound/http-request.adoc[]
+
+==== httpie
+include::{snippets}/findAllNotes_OK_noDataFound/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/findAllNotes_OK_noDataFound/curl-request.adoc[]
+
+=== Response
+include::{snippets}/findAllNotes_OK_noDataFound/http-response.adoc[]
+
+== Get one Note
+
+=== Request
+include::{snippets}/findNoteByReference_OK/http-request.adoc[]
+
+==== httpie
+include::{snippets}/findNoteByReference_OK/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/findNoteByReference_OK/curl-request.adoc[]
+
+=== Response
+include::{snippets}/findNoteByReference_OK/http-response.adoc[]
+
+== Get one Note but without any Data found
+
+=== Request
+include::{snippets}/findNoteByReference_NOK_noDataFound/http-request.adoc[]
+
+==== httpie
+include::{snippets}/findNoteByReference_NOK_noDataFound/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/findNoteByReference_NOK_noDataFound/curl-request.adoc[]
+
+=== Response
+include::{snippets}/findNoteByReference_NOK_noDataFound/http-response.adoc[]
+
+== Create a new Note
+
+=== Request
+include::{snippets}/create_OK/http-request.adoc[]
+
+==== httpie
+include::{snippets}/create_OK/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/create_OK/curl-request.adoc[]
+
+=== Response
+include::{snippets}/create_OK/http-response.adoc[]
+
+== Create a new Note - missing mandatory Parameter
+
+=== Request
+include::{snippets}/create_NOK_mandatoryParameterMissing/http-request.adoc[]
+
+==== httpie
+include::{snippets}/create_NOK_mandatoryParameterMissing/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/create_NOK_mandatoryParameterMissing/curl-request.adoc[]
+
+=== Response
+include::{snippets}/create_NOK_mandatoryParameterMissing/http-response.adoc[]
+
+== Update an existing Note
+
+=== Request
+include::{snippets}/update_OK/http-request.adoc[]
+
+==== httpie
+include::{snippets}/update_OK/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/update_OK/curl-request.adoc[]
+
+=== Response
+include::{snippets}/update_OK/http-response.adoc[]
+
+== Update an existing Note - wrong Version
+
+=== Request
+include::{snippets}/update_NOK_wrongVersion/http-request.adoc[]
+
+==== httpie
+include::{snippets}/update_NOK_wrongVersion/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/update_NOK_wrongVersion/curl-request.adoc[]
+
+=== Response
+include::{snippets}/update_NOK_wrongVersion/http-response.adoc[]
+
+== Update a non-existing Row
+
+=== Request
+include::{snippets}/update_NOK_noDataFound/http-request.adoc[]
+
+==== httpie
+include::{snippets}/update_NOK_noDataFound/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/update_NOK_noDataFound/curl-request.adoc[]
+
+=== Response
+include::{snippets}/update_NOK_noDataFound/http-response.adoc[]
+
+== Update an existing Row - mandatory Parameter missing
+
+=== Request
+include::{snippets}/update_NOK_mandatoryParameterMissing/http-request.adoc[]
+
+==== httpie
+include::{snippets}/update_NOK_mandatoryParameterMissing/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/update_NOK_mandatoryParameterMissing/curl-request.adoc[]
+
+=== Response
+include::{snippets}/update_NOK_mandatoryParameterMissing/http-response.adoc[]
+
+== Update an existing Row - lastUpdatedAt not set
+
+=== Request
+include::{snippets}/update_NOK_lastUpdatedAtMissing/http-request.adoc[]
+
+==== httpie
+include::{snippets}/update_NOK_lastUpdatedAtMissing/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/update_NOK_lastUpdatedAtMissing/curl-request.adoc[]
+
+=== Response
+include::{snippets}/update_NOK_lastUpdatedAtMissing/http-response.adoc[]
+
+== Delete an existing Row
+
+=== Request
+include::{snippets}/delete_OK/http-request.adoc[]
+
+==== httpie
+include::{snippets}/delete_OK/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/delete_OK/curl-request.adoc[]
+
+=== Response
+include::{snippets}/delete_OK/http-response.adoc[]
+
+== Delete a non-existing Row
+
+=== Request
+include::{snippets}/delete_NOK_noDataFound/http-request.adoc[]
+
+==== httpie
+include::{snippets}/delete_NOK_noDataFound/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/delete_NOK_noDataFound/curl-request.adoc[]
+
+=== Response
+include::{snippets}/delete_NOK_noDataFound/http-response.adoc[]
+
+== Delete an existing Row - lastUpdatedAt not set
+
+=== Request
+include::{snippets}/delete_NOK_lastUpdatedAtMissing/http-request.adoc[]
+
+==== httpie
+include::{snippets}/delete_NOK_lastUpdatedAtMissing/httpie-request.adoc[]
+
+==== curl
+include::{snippets}/delete_NOK_lastUpdatedAtMissing/curl-request.adoc[]
+
+=== Response
+include::{snippets}/delete_NOK_lastUpdatedAtMissing/http-response.adoc[]
