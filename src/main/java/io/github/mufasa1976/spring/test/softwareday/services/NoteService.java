@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface NoteService {
+  String LAST_MODIFICATION_DATE = "lastUpdatedAt";
+
   PagedResources<NoteResource> findAllNotes(Pageable pageable);
 
   Optional<NoteResource> findNoteByReference(@NotNull UUID reference);

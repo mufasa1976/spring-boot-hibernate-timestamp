@@ -5,15 +5,13 @@ import io.github.mufasa1976.spring.test.softwareday.entities.NoteEntity;
 import io.github.mufasa1976.spring.test.softwareday.repositories.NoteRepository;
 import io.github.mufasa1976.spring.test.softwareday.resources.NoteResource;
 import io.github.mufasa1976.spring.test.softwareday.services.NoteService;
-import org.junit.Before;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,15 +31,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest("debug=true")
+@SpringBootTest({"debug=true", "logging.level.io.github.mufasa1976.spring.test.softwareday=debug"})
 @AutoConfigureMockMvc
 @Transactional
+@Slf4j
 public class SpringBootTestSoftwaredayApplicationTests {
   private static final LocalDateTime LAST_UPDATED_AT = LocalDateTime.of(2019, 8, 17, 0, 34, 0, 1000000);
   private static final String FORMATTED_LAST_UPDATED_AT = LAST_UPDATED_AT.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-  private static final LocalDateTime NOW = LocalDateTime.now();
-  private static final String FORMATTED_NOW = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(NOW);
+  private static final String TEXT_PLAIN_UTF8 = "text/plain;charset=UTF-8";
 
   @Autowired
   private MockMvc web;
@@ -50,19 +47,11 @@ public class SpringBootTestSoftwaredayApplicationTests {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @MockBean
-  private DateTimeProvider dateTimeProvider;
-
   @Autowired
   private NoteRepository noteRepository;
 
   @SpyBean
   private NoteService noteService;
-
-  @Before
-  public void setUp() {
-    when(dateTimeProvider.getNow()).thenReturn(Optional.of(NOW));
-  }
 
   @Test
   @Sql("classpath:/scripts/db/notes.sql")
@@ -153,7 +142,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
            .andExpect(jsonPath("reference").exists())
            .andExpect(jsonPath("subject").value(is("Another Test Note")))
            .andExpect(jsonPath("body").value(is("Another Test Note Body")))
-           .andExpect(jsonPath("lastUpdatedAt").value(is(FORMATTED_NOW)))
+           .andExpect(jsonPath("lastUpdatedAt").exists())
            .andExpect(jsonPath("_links.self.href").exists())
            .andReturn()
            .getResponse()
@@ -167,13 +156,12 @@ public class SpringBootTestSoftwaredayApplicationTests {
     assertThat(entity)
         .extracting(
             NoteEntity::getSubject,
-            NoteEntity::getBody,
-            NoteEntity::getLastUpdatedAt)
-        .containsOnly("Another Test Note", "Another Test Note Body", NOW);
+            NoteEntity::getBody)
+        .containsOnly("Another Test Note", "Another Test Note Body");
   }
 
   @Test
-  public void create_NOK_missingSubject() throws Exception {
+  public void create_NOK_mandatoryParameterMissing() throws Exception {
     web.perform(post(Routes.NOTES)
         .contentType(APPLICATION_JSON_UTF8)
         .content(objectMapper.writeValueAsBytes(
@@ -192,7 +180,7 @@ public class SpringBootTestSoftwaredayApplicationTests {
         .contentType(APPLICATION_JSON_UTF8)
         .content(objectMapper.writeValueAsBytes(
             NoteResource.builder()
-                        .reference(UUID.randomUUID())
+                        .reference(UUID.randomUUID()) // should not be changed
                         .subject("Changed Note")
                         .body("Body of the changed Note")
                         .lastUpdatedAt(LAST_UPDATED_AT)
@@ -203,7 +191,95 @@ public class SpringBootTestSoftwaredayApplicationTests {
        .andExpect(jsonPath("reference").value(is("00000000-0000-0000-0000-000000000007")))
        .andExpect(jsonPath("subject").value(is("Changed Note")))
        .andExpect(jsonPath("body").value(is("Body of the changed Note")))
-       .andExpect(jsonPath("lastUpdatedAt").value(is(FORMATTED_NOW)))
+       .andExpect(jsonPath("lastUpdatedAt").exists())
        .andExpect(jsonPath("_links.self.href").value(is(getSelfLink("00000000-0000-0000-0000-000000000007"))));
+  }
+
+  @Test
+  @Sql("classpath:/scripts/db/notes.sql")
+  public void update_NOK_wrongVersion() throws Exception {
+    web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
+        .contentType(APPLICATION_JSON_UTF8)
+        .content(objectMapper.writeValueAsBytes(
+            NoteResource.builder()
+                        .subject("Changed Note")
+                        .body("Body of the changed Note")
+                        .lastUpdatedAt(LocalDateTime.now())
+                        .build())))
+       .andExpect(status().isConflict())
+       .andExpect(content().contentType(TEXT_PLAIN_UTF8))
+       .andExpect(content().string("Row has already been updated in another Session"));
+  }
+
+  @Test
+  public void update_NOK_noDataFound() throws Exception {
+    web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
+        .contentType(APPLICATION_JSON_UTF8)
+        .content(objectMapper.writeValueAsBytes(
+            NoteResource.builder()
+                        .subject("Changed Note")
+                        .body("Body of the changed Note")
+                        .lastUpdatedAt(LAST_UPDATED_AT)
+                        .build())))
+       .andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void update_NOK_mandatoryParameterMissing() throws Exception {
+    web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
+        .contentType(APPLICATION_JSON_UTF8)
+        .content(objectMapper.writeValueAsBytes(
+            NoteResource.builder()
+                        .body("Body of the changed Note")
+                        .lastUpdatedAt(LAST_UPDATED_AT)
+                        .build())))
+       .andExpect(status().isBadRequest());
+    verify(noteService, never()).update(any(), any());
+  }
+
+  @Test
+  public void update_NOK_lastUpdatedAtMissing() throws Exception {
+    web.perform(put(Routes.NOTE, "00000000-0000-0000-0000-000000000007")
+        .contentType(APPLICATION_JSON_UTF8)
+        .content(objectMapper.writeValueAsBytes(
+            NoteResource.builder()
+                        .subject("Changed Note")
+                        .body("Body of the changed Note")
+                        .build())))
+       .andExpect(status().isBadRequest())
+       .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+       .andExpect(jsonPath("message").value(String.format("Property '%s' has not been set", NoteService.LAST_MODIFICATION_DATE)))
+       .andExpect(jsonPath("resourceClass").value(is(NoteResource.class.getName())))
+       .andExpect(jsonPath("reference").value(is("00000000-0000-0000-0000-000000000007")));
+  }
+
+  @Test
+  @Sql("classpath:/scripts/db/notes.sql")
+  public void delete_OK() throws Exception {
+    assertThat(noteRepository.findOptionalByReference(UUID.fromString("00000000-0000-0000-0000-000000000009"))).isNotEmpty();
+
+    web.perform(delete(Routes.NOTE, "00000000-0000-0000-0000-000000000009")
+        .param(Routes.Param.LAST_UPDATED_AT, FORMATTED_LAST_UPDATED_AT))
+       .andExpect(status().isNoContent());
+
+    assertThat(noteRepository.findOptionalByReference(UUID.fromString("00000000-0000-0000-0000-000000000009"))).isEmpty();
+  }
+
+  @Test
+  public void delete_NOK_noDataFound() throws Exception {
+    web.perform(delete(Routes.NOTE, "00000000-0000-0000-0000-000000000009")
+        .param(Routes.Param.LAST_UPDATED_AT, FORMATTED_LAST_UPDATED_AT))
+       .andExpect(status().isNotFound())
+       .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+       .andExpect(jsonPath("resourceClass").value(is(NoteResource.class.getName())))
+       .andExpect(jsonPath("reference").value(is("00000000-0000-0000-0000-000000000009")))
+       .andExpect(jsonPath("lastUpdatedAt").value(is(FORMATTED_LAST_UPDATED_AT)));
+  }
+
+  @Test
+  public void delete_NOK_lastUpdatedAtMissing() throws Exception {
+    web.perform(delete(Routes.NOTE, "00000000-0000-0000-0000-000000000009"))
+       .andExpect(status().isBadRequest());
+    verify(noteService, never()).delete(any(), any());
   }
 }

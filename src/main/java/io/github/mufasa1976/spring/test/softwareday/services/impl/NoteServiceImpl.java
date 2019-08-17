@@ -27,8 +27,6 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class NoteServiceImpl implements NoteService {
-  private static final String LAST_MODIFICATION_DATE = "lastUpdatedAt";
-
   private final NoteRepository noteRepository;
   private final PagedResourcesAssembler<NoteEntity> pagedResourcesAssembler;
   private final NoteResourceAssembler noteResourceAssembler;
