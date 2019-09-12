@@ -13,7 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ToString(callSuper = false)
+@ToString
 @NoArgsConstructor // needed by Jackson
 @AllArgsConstructor(access = PRIVATE)
 @Builder
